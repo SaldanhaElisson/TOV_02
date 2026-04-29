@@ -21,6 +21,7 @@ interface WebGazerMock {
 	recordScreenPosition: ReturnType<typeof vi.fn>;
 	getStoredPoints: ReturnType<typeof vi.fn>;
 	clearData: ReturnType<typeof vi.fn>;
+	removeMouseEventListeners: ReturnType<typeof vi.fn>;
 	params: { saveDataAcrossSessions: boolean };
 }
 
@@ -36,8 +37,9 @@ const wgMock: WebGazerMock = {
 	showPredictionPoints: vi.fn(),
 	recordScreenPosition: vi.fn(),
 	getStoredPoints:      vi.fn(() => [[], []]),
-	clearData:            vi.fn(),
-	params:               { saveDataAcrossSessions: true },
+	clearData:                  vi.fn(),
+	removeMouseEventListeners:  vi.fn(),
+	params:                     { saveDataAcrossSessions: true },
 };
 
 vi.stubGlobal('webgazer', wgMock);

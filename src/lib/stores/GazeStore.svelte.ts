@@ -21,6 +21,12 @@ interface WebGazer {
 	getStoredPoints(): [Array<number | undefined>, Array<number | undefined>];
 	/** Wipes all stored regression training data. Call before each new calibration. */
 	clearData(): WebGazer;
+	/**
+	 * Removes WebGazer's built-in mouse/click event listeners.
+	 * Without this, cursor position contaminates the regression model —
+	 * the dot drifts toward wherever the mouse is resting on screen.
+	 */
+	removeMouseEventListeners(): WebGazer;
 	params: {
 		faceMeshSolutionPath: string;
 		/** When false, calibration data is NOT persisted to localStorage across page reloads. */
@@ -77,6 +83,11 @@ async function beginTracking(): Promise<void> {
 			.showVideoPreview(true)
 			.showPredictionPoints(false)
 			.begin();
+
+		// Remove built-in mouse listeners AFTER begin() — otherwise WebGazer
+		// trains the regression on cursor position, pulling the dot toward
+		// wherever the mouse is resting instead of where the user is looking.
+		webgazer.removeMouseEventListeners();
 
 		status = 'active';
 		isCameraReady = true;
