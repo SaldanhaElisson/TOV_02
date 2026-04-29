@@ -1,0 +1,35 @@
+{
+  "name": "tov-v2",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@testing-library/svelte": "^5.3.1",
+    "@tsconfig/svelte": "^5.0.8",
+    "@types/node": "^24.12.0",
+    "jsdom": "^29.0.1",
+    "svelte": "^5.53.12",
+    "svelte-check": "^4.4.5",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.2"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "bits-ui": "^2.16.4",
+    "lucide-svelte": "^1.0.1",
+    "sweetalert2": "^11.26.24",
+    "tailwindcss": "^4.2.2",
+    "webgazer": "^3.5.3"
+  }
+}
