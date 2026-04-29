@@ -4,11 +4,12 @@ import { experimentStore, type Stimulus } from './experimentStore.svelte';
 export type ExecutionStatus = 'idle' | 'running' | 'paused' | 'complete';
 
 
-let currentIndex = $state(-1);
-let isComplete = $state(false);
-let startTime = $state<number | null>(null);
-let isPaused = $state(false);
-let order = $state<number[]>([]);
+let currentIndex       = $state(-1);
+let isComplete         = $state(false);
+let startTime          = $state<number | null>(null);
+let needsRecalibration = $state(false);
+let isPaused           = $state(false);
+let order              = $state<number[]>([]);
 
 let timerId: ReturnType<typeof setTimeout> | null = null;
 
@@ -18,7 +19,7 @@ const currentStimulus = $derived<Stimulus | null>(
 );
 
 const isRunning = $derived(
-	currentIndex >= 0 && !isComplete && !isPaused,
+	currentIndex >= 0 && !isComplete && !isPaused && !needsRecalibration,
 );
 
 
@@ -50,6 +51,13 @@ function scheduleAdvance(): void {
 	timerId = setTimeout(() => next(), experimentStore.config.duration);
 }
 
+function checkRecalibration(completedCount: number): void {
+	const interval = experimentStore.config.recalibrationInterval;
+	if (interval <= 0) return;
+	if (completedCount % interval !== 0) return;
+	needsRecalibration = true;
+}
+
 
 function start(): void {
 	if (currentIndex >= 0) return;
@@ -62,13 +70,17 @@ function start(): void {
 
 function next(): void {
 	if (isComplete) return;
+	if (needsRecalibration) return;
 	if (currentIndex < 0) return;
 	clearTimer();
+	const completedCount = currentIndex + 1;
 	if (currentIndex >= order.length - 1) {
 		isComplete = true;
 		return;
 	}
 	currentIndex += 1;
+	checkRecalibration(completedCount);
+	if (needsRecalibration) return;
 	scheduleAdvance();
 }
 
@@ -84,26 +96,35 @@ function resume(): void {
 	scheduleAdvance();
 }
 
+function acknowledgeRecalibration(): void {
+	if (!needsRecalibration) return;
+	needsRecalibration = false;
+	scheduleAdvance();
+}
+
 function stop(): void {
 	clearTimer();
-	currentIndex = -1;
-	isComplete = false;
-	startTime = null;
-	isPaused = false;
-	order = [];
+	currentIndex       = -1;
+	isComplete         = false;
+	startTime          = null;
+	needsRecalibration = false;
+	isPaused           = false;
+	order              = [];
 }
 
 
 export const executionStore = {
-	get currentIndex() { return currentIndex; },
-	get isComplete() { return isComplete; },
-	get startTime() { return startTime; },
-	get isPaused() { return isPaused; },
-	get isRunning() { return isRunning; },
-	get currentStimulus() { return currentStimulus; },
+	get currentIndex()       { return currentIndex; },
+	get isComplete()         { return isComplete; },
+	get startTime()          { return startTime; },
+	get needsRecalibration() { return needsRecalibration; },
+	get isPaused()           { return isPaused; },
+	get isRunning()          { return isRunning; },
+	get currentStimulus()    { return currentStimulus; },
 	start,
 	next,
 	pause,
 	resume,
+	acknowledgeRecalibration,
 	stop,
 };

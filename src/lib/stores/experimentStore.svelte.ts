@@ -15,6 +15,8 @@ export interface ExperimentConfig {
 	mode: ExperimentMode;
 	/** Duration per stimulus in milliseconds (FIXED mode only). */
 	duration: number;
+	/** Recalibrate after every N stimuli. 0 = disabled. */
+	recalibrationInterval: number;
 }
 
 // ============================================================
@@ -25,6 +27,7 @@ const DEFAULT_CONFIG: ExperimentConfig = {
 	isRandom: false,
 	mode: 'FIXED',
 	duration: 5000,
+	recalibrationInterval: 0,
 };
 
 // ============================================================

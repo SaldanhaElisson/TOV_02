@@ -2,9 +2,10 @@
 	import { Switch, ToggleGroup } from 'bits-ui';
 	import { experimentStore, type ExperimentMode } from '$lib/stores/experimentStore.svelte';
 
-	const isRandom = $derived(experimentStore.config.isRandom);
-	const mode     = $derived(experimentStore.config.mode);
-	const duration = $derived(experimentStore.config.duration);
+	const isRandom      = $derived(experimentStore.config.isRandom);
+	const mode          = $derived(experimentStore.config.mode);
+	const duration      = $derived(experimentStore.config.duration);
+	const recalibration = $derived(experimentStore.config.recalibrationInterval);
 
 	function setMode(v: string | undefined) {
 		if (!v) return;
@@ -14,6 +15,11 @@
 	function setDuration(e: Event) {
 		const n = +(e.currentTarget as HTMLInputElement).value;
 		experimentStore.updateConfig({ duration: n });
+	}
+
+	function setRecalibration(e: Event) {
+		const n = +(e.currentTarget as HTMLInputElement).value;
+		experimentStore.updateConfig({ recalibrationInterval: n });
 	}
 </script>
 
@@ -69,4 +75,18 @@
 		/>
 	</label>
 	{/if}
+
+	<label class="block space-y-1">
+		<span class="text-sm text-muted">
+			Recalibrar a cada N imagens
+			<span class="text-muted/60">(0 = nunca)</span>
+		</span>
+		<input
+			type="number" min="0" step="1"
+			value={recalibration}
+			oninput={setRecalibration}
+			class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text
+			       focus:border-accent focus:outline-none"
+		/>
+	</label>
 </div>

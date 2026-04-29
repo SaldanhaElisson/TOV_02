@@ -32,7 +32,7 @@ describe('executionStore', () => {
 		vi.clearAllMocks();
 		createObjectURL.mockImplementation((f: File) => `blob:mock/${f.name}`);
 		// Reset config to known defaults before each test
-		experimentStore.updateConfig({ mode: 'MANUAL', duration: 5000, isRandom: false });
+		experimentStore.updateConfig({ mode: 'MANUAL', duration: 5000, recalibrationInterval: 0, isRandom: false });
 	});
 
 	// ----------------------------------------------------------
@@ -50,6 +50,10 @@ describe('executionStore', () => {
 
 		it('currentStimulus começa null', () => {
 			expect(executionStore.currentStimulus).toBeNull();
+		});
+
+		it('needsRecalibration começa false', () => {
+			expect(executionStore.needsRecalibration).toBe(false);
 		});
 
 		it('isRunning começa false', () => {
@@ -149,7 +153,7 @@ describe('executionStore', () => {
 	describe('Modo FIXED — avanço automático por timer', () => {
 		beforeEach(() => {
 			vi.useFakeTimers();
-			experimentStore.updateConfig({ mode: 'FIXED', duration: 1000 });
+			experimentStore.updateConfig({ mode: 'FIXED', duration: 1000, recalibrationInterval: 0 });
 			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
 		});
 
@@ -195,7 +199,7 @@ describe('executionStore', () => {
 	describe('pause() e resume()', () => {
 		beforeEach(() => {
 			vi.useFakeTimers();
-			experimentStore.updateConfig({ mode: 'FIXED', duration: 2000 });
+			experimentStore.updateConfig({ mode: 'FIXED', duration: 2000, recalibrationInterval: 0 });
 			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
 		});
 
@@ -231,7 +235,63 @@ describe('executionStore', () => {
 	});
 
 	// ----------------------------------------------------------
-	// 6. isRandom
+	// 6. Recalibração periódica (recalibrationInterval)
+	// ----------------------------------------------------------
+
+	describe('Recalibração periódica (recalibrationInterval)', () => {
+		it('define needsRecalibration ao atingir o intervalo', () => {
+			experimentStore.updateConfig({ recalibrationInterval: 2 });
+			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg', 'd.jpg']);
+			executionStore.start();
+			executionStore.next(); // completedCount=1, 1%2≠0
+			executionStore.next(); // completedCount=2, 2%2=0 → recalibra
+			expect(executionStore.needsRecalibration).toBe(true);
+		});
+
+		it('não dispara quando recalibrationInterval é 0', () => {
+			experimentStore.updateConfig({ recalibrationInterval: 0 });
+			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
+			executionStore.start();
+			executionStore.next();
+			executionStore.next();
+			expect(executionStore.needsRecalibration).toBe(false);
+		});
+
+		it('next() é no-op quando needsRecalibration está ativo', () => {
+			experimentStore.updateConfig({ recalibrationInterval: 1 });
+			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
+			executionStore.start();
+			executionStore.next(); // completedCount=1, 1%1=0 → recalibra
+			const frozenIndex = executionStore.currentIndex;
+			executionStore.next(); // não deve avançar
+			expect(executionStore.currentIndex).toBe(frozenIndex);
+		});
+
+		it('acknowledgeRecalibration() limpa o flag', () => {
+			experimentStore.updateConfig({ recalibrationInterval: 1 });
+			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
+			executionStore.start();
+			executionStore.next();
+			executionStore.acknowledgeRecalibration();
+			expect(executionStore.needsRecalibration).toBe(false);
+		});
+
+		it('retoma o avanço após acknowledgeRecalibration() no modo FIXED', () => {
+			vi.useFakeTimers();
+			experimentStore.updateConfig({ mode: 'FIXED', duration: 500, recalibrationInterval: 1 });
+			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
+			executionStore.start();
+			vi.advanceTimersByTime(500); // next(): completedCount=1 → recalibra
+			expect(executionStore.needsRecalibration).toBe(true);
+			executionStore.acknowledgeRecalibration();
+			vi.advanceTimersByTime(500); // retoma
+			expect(executionStore.currentIndex).toBe(2);
+			vi.useRealTimers();
+		});
+	});
+
+	// ----------------------------------------------------------
+	// 7. isRandom
 	// ----------------------------------------------------------
 
 	describe('isRandom — embaralhamento da ordem', () => {

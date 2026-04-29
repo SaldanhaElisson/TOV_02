@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, untrack } from "svelte";
   import StimulusDisplay from "./StimulusDisplay.svelte";
+  import CalibrationOverlay from "$lib/components/calibration/CalibrationOverlay.svelte";
 
   import { executionStore } from "$lib/stores/executionStore.svelte";
   import { resultsStore } from "$lib/stores/resultsStore.svelte";
@@ -18,6 +19,10 @@
     dataCollector.stop();
   });
 
+  function handleRecalibrationComplete(): void {
+    executionStore.acknowledgeRecalibration();
+  }
+
   $effect(() => {
     if (!executionStore.isComplete) return;
     untrack(() => {
@@ -29,4 +34,10 @@
   });
 </script>
 
+<!-- StimulusDisplay stays mounted during recalibration so onload is not re-fired
+     and the existing resultsStore row for the current stimulus is preserved. -->
 <StimulusDisplay />
+
+{#if executionStore.needsRecalibration}
+  <CalibrationOverlay onComplete={handleRecalibrationComplete} />
+{/if}
