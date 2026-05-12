@@ -78,7 +78,7 @@ async function beginTracking(): Promise<void> {
 
 		await webgazer
 			.setRegression('ridge')
-			.applyKalmanFilter(true)
+			.applyKalmanFilter(false)
 			.setGazeListener(handleGazeData)
 			.showVideoPreview(true)
 			.showPredictionPoints(false)
@@ -140,6 +140,18 @@ function recordClick(x: number, y: number): void {
 }
 
 /**
+ * Records a smooth-pursuit training sample at position (x, y).
+ * Called continuously while an animated target moves across the screen.
+ * Uses 'move' event type — same regression weight as 'click' for ridge.
+ */
+function recordMove(x: number, y: number): void {
+	if (status === 'idle') return;
+	// Ridge regression only trains on 'click' samples — 'move' goes to a separate
+	// array that ridge ignores. Using 'click' ensures smooth-pursuit data is used.
+	webgazer.recordScreenPosition(x, y, 'click');
+}
+
+/**
  * Returns the last 50 valid (x, y) gaze predictions from WebGazer's
  * internal rolling buffer. Sparse entries (undefined) are stripped so
  * both output arrays are always the same length.
@@ -190,6 +202,11 @@ function setPredictionPoints(show: boolean): void {
 	webgazer.showPredictionPoints(show);
 }
 
+function setKalmanFilter(enabled: boolean): void {
+	if (status === 'idle') return;
+	webgazer.applyKalmanFilter(enabled);
+}
+
 export const gazeStore = {
 	get isActive()        { return isActive; },
 	get latestGaze()      { return latestGaze; },
@@ -200,7 +217,9 @@ export const gazeStore = {
 	stop,
 	clearData,
 	recordClick,
+	recordMove,
 	getStoredPoints,
 	setVideoPreview,
 	setPredictionPoints,
+	setKalmanFilter,
 };

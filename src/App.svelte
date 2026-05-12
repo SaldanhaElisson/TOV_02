@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import SetupView from "$lib/components/setup/SetupView.svelte";
-  import CalibrationOverlay from "$lib/components/calibration/CalibrationOverlay.svelte";
+  import CalibrationRouter from "$lib/components/calibration/CalibrationRouter.svelte";
   import RunView from "$lib/components/experiment/RunView.svelte";
   import { gazeStore } from "$lib/stores/GazeStore.svelte";
+  import { experimentStore } from "$lib/stores/experimentStore.svelte";
 
   type Stage = "setup" | "calibration" | "experiment";
 
@@ -17,6 +18,10 @@
     if (stage !== "calibration") gazeStore.setPredictionPoints(false);
   });
 
+  $effect(() => {
+    gazeStore.setKalmanFilter(experimentStore.config.useKalmanFilter);
+  });
+
   function handleExperimentComplete(): void {
     stage = "setup";
   }
@@ -27,7 +32,7 @@
 {/if}
 
 {#if stage === "calibration"}
-  <CalibrationOverlay onComplete={() => (stage = "experiment")} />
+  <CalibrationRouter onComplete={() => (stage = "experiment")} />
 {/if}
 
 {#if stage === "experiment"}

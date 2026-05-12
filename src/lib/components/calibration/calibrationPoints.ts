@@ -19,7 +19,7 @@ export const CALIBRATION_POINTS: Point[] = [
 	{ x: 50, y: 50 },
 ];
 
-export const CLICKS_PER_POINT = 5;
+export const CLICKS_PER_POINT = 7;
 export const TOTAL_POINTS     = CALIBRATION_POINTS.length;
 /** Milliseconds to block clicks after a new point becomes active.
  *  Allows the eye to physically settle on the target before registering data. */

@@ -8,7 +8,8 @@ export interface Stimulus {
 	name: string;
 }
 
-export type ExperimentMode = 'FIXED' | 'MANUAL';
+export type ExperimentMode    = 'FIXED' | 'MANUAL';
+export type CalibrationMode   = 'click';
 
 export interface ExperimentConfig {
 	isRandom: boolean;
@@ -17,6 +18,9 @@ export interface ExperimentConfig {
 	duration: number;
 	/** Recalibrate after every N stimuli. 0 = disabled. */
 	recalibrationInterval: number;
+	calibrationMode: CalibrationMode;
+	/** Apply Kalman filter to gaze predictions. Smooths noise but adds lag. */
+	useKalmanFilter: boolean;
 }
 
 // ============================================================
@@ -28,6 +32,8 @@ const DEFAULT_CONFIG: ExperimentConfig = {
 	mode: 'FIXED',
 	duration: 5000,
 	recalibrationInterval: 0,
+	calibrationMode: 'click',
+	useKalmanFilter: false,
 };
 
 // ============================================================

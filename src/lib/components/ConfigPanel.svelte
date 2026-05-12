@@ -2,17 +2,18 @@
 	import { Switch, ToggleGroup } from 'bits-ui';
 	import { experimentStore, type ExperimentMode } from '$lib/stores/experimentStore.svelte';
 
-	const isRandom      = $derived(experimentStore.config.isRandom);
-	const mode          = $derived(experimentStore.config.mode);
-	const duration      = $derived(experimentStore.config.duration);
-	const recalibration = $derived(experimentStore.config.recalibrationInterval);
+	const isRandom        = $derived(experimentStore.config.isRandom);
+	const mode            = $derived(experimentStore.config.mode);
+	const duration        = $derived(experimentStore.config.duration);
+	const recalibration   = $derived(experimentStore.config.recalibrationInterval);
+	const useKalmanFilter = $derived(experimentStore.config.useKalmanFilter);
 
 	function setMode(v: string | undefined) {
 		if (!v) return;
 		experimentStore.updateConfig({ mode: v as ExperimentMode });
 	}
 
-	function setDuration(e: Event) {
+function setDuration(e: Event) {
 		const seconds = +(e.currentTarget as HTMLInputElement).value;
 		experimentStore.updateConfig({ duration: seconds * 1000 });
 	}
@@ -25,6 +26,23 @@
 
 <div class="space-y-6 rounded-xl border border-border bg-raised p-6">
 	<h2 class="text-sm font-semibold uppercase tracking-widest text-muted">Configurações</h2>
+
+	<label class="flex items-center justify-between gap-4">
+		<span class="text-sm text-text">
+			Filtro de Kalman
+			<span class="block text-xs text-muted/60">Suaviza predições — ativar para Percurso/Lissajous</span>
+		</span>
+		<Switch.Root
+			checked={useKalmanFilter}
+			onCheckedChange={(v) => experimentStore.updateConfig({ useKalmanFilter: v })}
+			class="relative h-6 w-11 rounded-full bg-border transition-colors data-[state=checked]:bg-accent"
+		>
+			<Switch.Thumb
+				class="block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow
+				       transition-transform data-[state=checked]:translate-x-[22px]"
+			/>
+		</Switch.Root>
+	</label>
 
 	<label class="flex items-center justify-between gap-4">
 		<span class="text-sm text-text">Ordem aleatória</span>
@@ -76,7 +94,7 @@
 	</label>
 	{/if}
 
-	<label class="block space-y-1">
+<label class="block space-y-1">
 		<span class="text-sm text-muted">
 			Recalibrar a cada N imagens
 			<span class="text-muted/60">(0 = nunca)</span>

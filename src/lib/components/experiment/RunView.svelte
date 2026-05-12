@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, untrack } from "svelte";
   import StimulusDisplay from "./StimulusDisplay.svelte";
-  import CalibrationOverlay from "$lib/components/calibration/CalibrationOverlay.svelte";
+  import CalibrationRouter from "$lib/components/calibration/CalibrationRouter.svelte";
 
   import { executionStore } from "$lib/stores/executionStore.svelte";
   import { resultsStore } from "$lib/stores/resultsStore.svelte";
@@ -43,5 +43,8 @@
 <StimulusDisplay />
 
 {#if executionStore.needsRecalibration}
-  <CalibrationOverlay onComplete={handleRecalibrationComplete} />
+  <CalibrationRouter
+    onComplete={handleRecalibrationComplete}
+    preserveData={true}
+  />
 {/if}

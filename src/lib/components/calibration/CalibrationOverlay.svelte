@@ -10,7 +10,10 @@
   import CalibrationPoint from "./CalibrationPoint.svelte";
   import ValidationOverlay from "./ValidationOverlay.svelte";
 
-  let { onComplete }: { onComplete: () => void } = $props();
+  let {
+    onComplete,
+    preserveData = false,
+  }: { onComplete: () => void; preserveData?: boolean } = $props();
 
   type Phase = "calibrating" | "validating";
   let phase = $state<Phase>("calibrating");
@@ -68,8 +71,8 @@
     advancePoint();
   }
 
-  function startCalibration(): void {
-    gazeStore.clearData();
+  function startCalibration(forceClear: boolean = false): void {
+    if (forceClear || !preserveData) gazeStore.clearData();
     gazeStore.setPredictionPoints(true);
     const indices = shuffled([...Array(TOTAL_POINTS).keys()]);
     const centerIdx = CALIBRATION_POINTS.findIndex(p => p.x === 50 && p.y === 50);
@@ -82,7 +85,7 @@
 
   function resetCalibration(): void {
     gazeStore.resume();
-    startCalibration();
+    startCalibration(true);
   }
 
   onDestroy(() => {
