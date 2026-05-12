@@ -13,8 +13,8 @@
 	}
 
 	function setDuration(e: Event) {
-		const n = +(e.currentTarget as HTMLInputElement).value;
-		experimentStore.updateConfig({ duration: n });
+		const seconds = +(e.currentTarget as HTMLInputElement).value;
+		experimentStore.updateConfig({ duration: seconds * 1000 });
 	}
 
 	function setRecalibration(e: Event) {
@@ -65,10 +65,10 @@
 
 	{#if mode === 'FIXED'}
 	<label class="block space-y-1">
-		<span class="text-sm text-muted">Duração por imagem (ms)</span>
+		<span class="text-sm text-muted">Duração por imagem (s)</span>
 		<input
-			type="number" min="500" step="500"
-			value={duration}
+			type="number" min="0.5" step="0.5"
+			value={duration / 1000}
 			oninput={setDuration}
 			class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text
 			       focus:border-accent focus:outline-none"

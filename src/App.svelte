@@ -14,8 +14,6 @@
 
   $effect(() => {
     gazeStore.setVideoPreview(stage === "setup");
-    // Calibration manages its own dot via startCalibration() / gazeStore.setPredictionPoints(true).
-    // Only force-hide in the other two stages to avoid overriding it.
     if (stage !== "calibration") gazeStore.setPredictionPoints(false);
   });
 

@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
   import { gazeStore } from "$lib/stores/GazeStore.svelte";
   import {
     CALIBRATION_POINTS,
     CLICKS_PER_POINT,
     TOTAL_POINTS,
+    SETTLE_MS,
   } from "./calibrationPoints.js";
   import CalibrationPoint from "./CalibrationPoint.svelte";
   import ValidationOverlay from "./ValidationOverlay.svelte";
@@ -14,13 +16,29 @@
   let phase = $state<Phase>("calibrating");
 
   let currentPointIndex = $state(0);
-  let clickCounts = $state<number[]>(new Array(TOTAL_POINTS).fill(0));
+  let clickCounts       = $state<number[]>(new Array(TOTAL_POINTS).fill(0));
+  let settled           = $state(false);
+  let order             = $state<number[]>([]);
 
-  // Clear stale regression data and enable gaze dot on first render.
-  startCalibration();
+  let settleTimer: ReturnType<typeof setTimeout> | null = null;
 
   const totalClicks = $derived(clickCounts.reduce((s, n) => s + n, 0));
-  const maxClicks = $derived(TOTAL_POINTS * CLICKS_PER_POINT);
+  const maxClicks   = $derived(TOTAL_POINTS * CLICKS_PER_POINT);
+
+  function shuffled(arr: number[]): number[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function scheduleSettle(): void {
+    settled = false;
+    if (settleTimer) clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => { settled = true; }, SETTLE_MS);
+  }
 
   function toPixel(percent: number, dimension: number): number {
     return (percent / 100) * dimension;
@@ -33,12 +51,13 @@
       return;
     }
     currentPointIndex += 1;
+    scheduleSettle();
   }
 
   function handlePointClick(index: number): void {
     if (index !== currentPointIndex) return;
-
-    const point = CALIBRATION_POINTS[index];
+    if (!settled) return;
+    const point = CALIBRATION_POINTS[order[index]];
     const pixelX = toPixel(point.x, window.innerWidth);
     const pixelY = toPixel(point.y, window.innerHeight);
 
@@ -52,15 +71,25 @@
   function startCalibration(): void {
     gazeStore.clearData();
     gazeStore.setPredictionPoints(true);
+    const indices = shuffled([...Array(TOTAL_POINTS).keys()]);
+    const centerIdx = CALIBRATION_POINTS.findIndex(p => p.x === 50 && p.y === 50);
+    order = [...indices.filter(i => i !== centerIdx), centerIdx];
     currentPointIndex = 0;
     clickCounts = new Array(TOTAL_POINTS).fill(0);
     phase = "calibrating";
+    scheduleSettle();
   }
 
   function resetCalibration(): void {
     gazeStore.resume();
     startCalibration();
   }
+
+  onDestroy(() => {
+    if (settleTimer) clearTimeout(settleTimer);
+  });
+
+  startCalibration();
 </script>
 
 {#if phase === "calibrating"}
@@ -72,16 +101,18 @@
         Calibração
       </p>
       <p class="text-sm text-white/70">
-        Clique em cada ponto <span class="text-accent">9 vezes</span> até ele desaparecer
+        Olhe fixamente para o ponto e clique nele
+        <span class="text-accent">{CLICKS_PER_POINT} vezes</span>
       </p>
     </header>
 
-    {#each CALIBRATION_POINTS as point, i (i)}
+    {#each CALIBRATION_POINTS as _point, i (i)}
       <CalibrationPoint
-        {point}
+        point={CALIBRATION_POINTS[order[i]]}
         clickCount={clickCounts[i]}
         isActive={i === currentPointIndex}
         isComplete={i < currentPointIndex}
+        isSettled={settled}
         onClick={() => handlePointClick(i)}
       />
     {/each}

@@ -7,10 +7,12 @@
   import { resultsStore } from "$lib/stores/resultsStore.svelte";
   import { experimentStore } from "$lib/stores/experimentStore.svelte";
   import { dataCollector } from "$lib/services/DataCollector.svelte";
+  import { gazeStore } from "$lib/stores/GazeStore.svelte";
 
   let { onComplete }: { onComplete: () => void } = $props();
 
-  onMount(() => {
+  onMount(async () => {
+    await gazeStore.resume();
     executionStore.start();
     dataCollector.start();
   });
@@ -19,7 +21,9 @@
     dataCollector.stop();
   });
 
-  function handleRecalibrationComplete(): void {
+  async function handleRecalibrationComplete(): Promise<void> {
+    await gazeStore.resume();
+    resultsStore.resetCurrentRowTimestamp();
     executionStore.acknowledgeRecalibration();
   }
 

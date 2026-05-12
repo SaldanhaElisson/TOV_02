@@ -67,9 +67,23 @@ function setImageBounds(bounds: ImageBounds): void {
  * Appends a gaze entry to the current image's row.
  * No-op if no image is active.
  */
-function recordGazeEntry(point: Point, elapsedTime: number): void {
+function isOnScreen(point: Point): boolean {
+	return point.x >= 0 && point.y >= 0
+		&& point.x <= window.innerWidth
+		&& point.y <= window.innerHeight;
+}
+
+function resetCurrentRowTimestamp(): void {
 	const row = lastRow();
 	if (!row) return;
+	row.timestamp = Date.now();
+}
+
+function recordGazeEntry(point: Point): void {
+	const row = lastRow();
+	if (!row) return;
+	if (!isOnScreen(point)) return;
+	const elapsedTime = Date.now() - row.timestamp;
 	row.gazeData.push(buildEntry(point, elapsedTime));
 }
 
@@ -119,6 +133,7 @@ function flush(): ExportRow[] {
 export const resultsStore = {
 	get rows()      { return rows; },
 	setImageBounds,
+	resetCurrentRowTimestamp,
 	recordGazeEntry,
 	addRecord,
 	generateFinalCsv,

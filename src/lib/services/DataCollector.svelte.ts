@@ -19,18 +19,10 @@ let timerId: ReturnType<typeof setInterval> | null = null;
 // Private
 // ============================================================
 
-/**
- * Called on every interval tick.
- * Guard 1: skip if the experiment is not actively running.
- * Guard 2: skip if startTime has not been set yet.
- */
+/** Called on every interval tick. No-op if the experiment is not running. */
 function collectSample(): void {
 	if (!executionStore.isRunning) return;
-	const startTime = executionStore.startTime;
-	if (startTime === null) return;
-
-	const elapsedTime = Date.now() - startTime;
-	resultsStore.recordGazeEntry(gazeStore.latestGaze, elapsedTime);
+	resultsStore.recordGazeEntry(gazeStore.latestGaze);
 }
 
 // ============================================================

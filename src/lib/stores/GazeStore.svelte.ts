@@ -191,9 +191,9 @@ function setPredictionPoints(show: boolean): void {
 }
 
 export const gazeStore = {
-	get isActive()      { return isActive; },
-	get latestGaze()    { return latestGaze; },
-	get isCameraReady() { return isCameraReady; },
+	get isActive()        { return isActive; },
+	get latestGaze()      { return latestGaze; },
+	get isCameraReady()   { return isCameraReady; },
 	start,
 	pause,
 	resume,
