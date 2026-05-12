@@ -1,12 +1,8 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
   import { gazeStore } from "$lib/stores/GazeStore.svelte";
-  import {
-    CALIBRATION_POINTS,
-    CLICKS_PER_POINT,
-    TOTAL_POINTS,
-    SETTLE_MS,
-  } from "./calibrationPoints.js";
+  import { CALIBRATION_POINTS, CLICKS_PER_POINT, TOTAL_POINTS, SETTLE_MS } from "./calibrationPoints.js";
+  import { toPixels, buildCalibrationOrder } from "./click/calibrationOrder";
   import CalibrationPoint from "./CalibrationPoint.svelte";
   import ValidationOverlay from "./ValidationOverlay.svelte";
 
@@ -22,47 +18,10 @@
   let clickCounts       = $state<number[]>(new Array(TOTAL_POINTS).fill(0));
   let settled           = $state(false);
   let order             = $state<number[]>([]);
-
   let settleTimer: ReturnType<typeof setTimeout> | null = null;
 
   const totalClicks = $derived(clickCounts.reduce((s, n) => s + n, 0));
   const maxClicks   = $derived(TOTAL_POINTS * CLICKS_PER_POINT);
-
-  function toPixels(point: { x: number; y: number }): { x: number; y: number } {
-    return {
-      x: (point.x / 100) * window.innerWidth,
-      y: (point.y / 100) * window.innerHeight,
-    };
-  }
-
-  function randomIndexUpTo(max: number): number {
-    return Math.floor(Math.random() * max);
-  }
-
-  function swapAt(arr: number[], i: number, j: number): void {
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-
-  function shuffled(indices: number[]): number[] {
-    const result = [...indices];
-    for (let i = result.length - 1; i > 0; i--) {
-      swapAt(result, i, randomIndexUpTo(i + 1));
-    }
-    return result;
-  }
-
-  function isCenterPoint(index: number): boolean {
-    const p = CALIBRATION_POINTS[index];
-    return p.x === 50 && p.y === 50;
-  }
-
-  function buildCalibrationOrder(): number[] {
-    const allIndices  = [...Array(TOTAL_POINTS).keys()];
-    const randomOrder = shuffled(allIndices);
-    const nonCenter   = randomOrder.filter(i => !isCenterPoint(i));
-    const centerIndex = allIndices.find(isCenterPoint) ?? TOTAL_POINTS - 1;
-    return [...nonCenter, centerIndex];
-  }
 
   function scheduleSettle(): void {
     settled = false;
@@ -81,7 +40,7 @@
     scheduleSettle();
   }
 
-  function recordClickForCurrentPoint(index: number): void {
+  function recordClick(index: number): void {
     const pixels = toPixels(CALIBRATION_POINTS[order[index]]);
     gazeStore.recordClick(pixels.x, pixels.y);
     clickCounts[index]++;
@@ -90,7 +49,7 @@
   function handlePointClick(index: number): void {
     if (index !== currentPointIndex) return;
     if (!settled) return;
-    recordClickForCurrentPoint(index);
+    recordClick(index);
     if (clickCounts[index] < CLICKS_PER_POINT) return;
     advancePoint();
   }
@@ -110,21 +69,15 @@
     startCalibration(true);
   }
 
-  onDestroy(() => {
-    if (settleTimer) clearTimeout(settleTimer);
-  });
+  onDestroy(() => { if (settleTimer) clearTimeout(settleTimer); });
 
   startCalibration();
 </script>
 
 {#if phase === "calibrating"}
   <div class="fixed inset-0 z-50 cursor-crosshair bg-black/95 select-none">
-    <header
-      class="absolute inset-x-0 top-6 flex flex-col items-center gap-1 text-center"
-    >
-      <p class="text-xs font-medium uppercase tracking-widest text-white/40">
-        Calibração
-      </p>
+    <header class="absolute inset-x-0 top-6 flex flex-col items-center gap-1 text-center">
+      <p class="text-xs font-medium uppercase tracking-widest text-white/40">Calibração</p>
       <p class="text-sm text-white/70">
         Olhe fixamente para o ponto e clique nele
         <span class="text-accent">{CLICKS_PER_POINT} vezes</span>
@@ -142,18 +95,14 @@
       />
     {/each}
 
-    <footer
-      class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-3"
-    >
+    <footer class="absolute inset-x-0 bottom-6 flex items-center justify-center gap-3">
       <div class="h-1 w-48 overflow-hidden rounded-full bg-white/10">
         <div
           class="h-full rounded-full bg-accent transition-all duration-300"
           style="width: {(totalClicks / maxClicks) * 100}%"
         ></div>
       </div>
-      <span class="text-xs text-white/40"
-        >{totalClicks} / {maxClicks} cliques</span
-      >
+      <span class="text-xs text-white/40">{totalClicks} / {maxClicks} cliques</span>
     </footer>
   </div>
 {/if}
