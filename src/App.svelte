@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import SetupView from "$lib/components/setup/SetupView.svelte";
-  import CalibrationRouter from "$lib/components/calibration/CalibrationRouter.svelte";
+  import CalibrationOverlay from "$lib/components/calibration/CalibrationOverlay.svelte";
   import RunView from "$lib/components/experiment/RunView.svelte";
   import { gazeStore } from "$lib/stores/GazeStore.svelte";
   import { experimentStore } from "$lib/stores/experimentStore.svelte";
@@ -32,7 +32,7 @@
 {/if}
 
 {#if stage === "calibration"}
-  <CalibrationRouter onComplete={() => (stage = "experiment")} />
+  <CalibrationOverlay onComplete={() => (stage = "experiment")} />
 {/if}
 
 {#if stage === "experiment"}

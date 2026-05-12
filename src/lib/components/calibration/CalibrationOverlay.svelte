@@ -28,13 +28,40 @@
   const totalClicks = $derived(clickCounts.reduce((s, n) => s + n, 0));
   const maxClicks   = $derived(TOTAL_POINTS * CLICKS_PER_POINT);
 
-  function shuffled(arr: number[]): number[] {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
+  function toPixels(point: { x: number; y: number }): { x: number; y: number } {
+    return {
+      x: (point.x / 100) * window.innerWidth,
+      y: (point.y / 100) * window.innerHeight,
+    };
+  }
+
+  function randomIndexUpTo(max: number): number {
+    return Math.floor(Math.random() * max);
+  }
+
+  function swapAt(arr: number[], i: number, j: number): void {
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+
+  function shuffled(indices: number[]): number[] {
+    const result = [...indices];
+    for (let i = result.length - 1; i > 0; i--) {
+      swapAt(result, i, randomIndexUpTo(i + 1));
     }
-    return a;
+    return result;
+  }
+
+  function isCenterPoint(index: number): boolean {
+    const p = CALIBRATION_POINTS[index];
+    return p.x === 50 && p.y === 50;
+  }
+
+  function buildCalibrationOrder(): number[] {
+    const allIndices  = [...Array(TOTAL_POINTS).keys()];
+    const randomOrder = shuffled(allIndices);
+    const nonCenter   = randomOrder.filter(i => !isCenterPoint(i));
+    const centerIndex = allIndices.find(isCenterPoint) ?? TOTAL_POINTS - 1;
+    return [...nonCenter, centerIndex];
   }
 
   function scheduleSettle(): void {
@@ -43,30 +70,27 @@
     settleTimer = setTimeout(() => { settled = true; }, SETTLE_MS);
   }
 
-  function toPixel(percent: number, dimension: number): number {
-    return (percent / 100) * dimension;
+  function finishCalibration(): void {
+    gazeStore.pause();
+    phase = "validating";
   }
 
   function advancePoint(): void {
-    if (currentPointIndex >= TOTAL_POINTS - 1) {
-      gazeStore.pause();
-      phase = "validating";
-      return;
-    }
+    if (currentPointIndex >= TOTAL_POINTS - 1) { finishCalibration(); return; }
     currentPointIndex += 1;
     scheduleSettle();
+  }
+
+  function recordClickForCurrentPoint(index: number): void {
+    const pixels = toPixels(CALIBRATION_POINTS[order[index]]);
+    gazeStore.recordClick(pixels.x, pixels.y);
+    clickCounts[index]++;
   }
 
   function handlePointClick(index: number): void {
     if (index !== currentPointIndex) return;
     if (!settled) return;
-    const point = CALIBRATION_POINTS[order[index]];
-    const pixelX = toPixel(point.x, window.innerWidth);
-    const pixelY = toPixel(point.y, window.innerHeight);
-
-    gazeStore.recordClick(pixelX, pixelY);
-    clickCounts[index]++;
-
+    recordClickForCurrentPoint(index);
     if (clickCounts[index] < CLICKS_PER_POINT) return;
     advancePoint();
   }
@@ -74,12 +98,10 @@
   function startCalibration(forceClear: boolean = false): void {
     if (forceClear || !preserveData) gazeStore.clearData();
     gazeStore.setPredictionPoints(true);
-    const indices = shuffled([...Array(TOTAL_POINTS).keys()]);
-    const centerIdx = CALIBRATION_POINTS.findIndex(p => p.x === 50 && p.y === 50);
-    order = [...indices.filter(i => i !== centerIdx), centerIdx];
+    order             = buildCalibrationOrder();
     currentPointIndex = 0;
-    clickCounts = new Array(TOTAL_POINTS).fill(0);
-    phase = "calibrating";
+    clickCounts       = new Array(TOTAL_POINTS).fill(0);
+    phase             = "calibrating";
     scheduleSettle();
   }
 
