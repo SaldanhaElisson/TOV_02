@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { experimentStore } from './experimentStore.svelte';
 
-// ============================================================
-// jsdom does not implement URL.createObjectURL / revokeObjectURL.
-// We replace them with deterministic stubs so tests stay pure.
-// ============================================================
-
 const createObjectURL = vi.fn((file: File) => `blob:mock/${file.name}`);
 const revokeObjectURL = vi.fn();
 
@@ -15,8 +10,6 @@ vi.stubGlobal('URL', {
 	revokeObjectURL,
 });
 
-
-
 function makeImageFile(name = 'photo.jpg', type = 'image/jpeg'): File {
 	return new File(['data'], name, { type });
 }
@@ -25,17 +18,12 @@ function makeTextFile(name = 'notes.txt'): File {
 	return new File(['data'], name, { type: 'text/plain' });
 }
 
-
-
 describe('experimentStore', () => {
 	beforeEach(() => {
 		experimentStore.clear();
 		vi.clearAllMocks();
-		// Restore stub after clearAllMocks resets call counts
 		createObjectURL.mockImplementation((file: File) => `blob:mock/${file.name}`);
 	});
-
-
 
 	describe('Estado inicial', () => {
 		it('stimuli começa vazio', () => {
@@ -61,10 +49,7 @@ describe('experimentStore', () => {
 		it('config.duration padrão é 5000ms', () => {
 			expect(experimentStore.config.duration).toBe(5000);
 		});
-
 	});
-
-
 
 	describe('addStimuli()', () => {
 		it('adiciona um arquivo de imagem ao array de stimuli', () => {
@@ -129,7 +114,6 @@ describe('experimentStore', () => {
 		});
 	});
 
-
 	describe('removeStimulus()', () => {
 		it('remove o estímulo pelo id', () => {
 			experimentStore.addStimuli([makeImageFile('keep.jpg'), makeImageFile('remove.jpg')]);
@@ -161,8 +145,6 @@ describe('experimentStore', () => {
 		});
 	});
 
-
-
 	describe('updateConfig()', () => {
 		it('atualiza apenas os campos fornecidos (merge parcial)', () => {
 			experimentStore.updateConfig({ mode: 'MANUAL' });
@@ -180,7 +162,7 @@ describe('experimentStore', () => {
 			expect(experimentStore.config.duration).toBe(8000);
 		});
 
-it('múltiplas chamadas acumulam corretamente', () => {
+		it('múltiplas chamadas acumulam corretamente', () => {
 			experimentStore.updateConfig({ mode: 'MANUAL', duration: 3000 });
 			experimentStore.updateConfig({ isRandom: true });
 			expect(experimentStore.config.mode).toBe('MANUAL');
@@ -188,8 +170,6 @@ it('múltiplas chamadas acumulam corretamente', () => {
 			expect(experimentStore.config.isRandom).toBe(true);
 		});
 	});
-
-
 
 	describe('clear()', () => {
 		it('esvazia o array de stimuli', () => {

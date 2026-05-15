@@ -1,0 +1,8 @@
+services:
+  tov-v2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    restart: unless-stopped

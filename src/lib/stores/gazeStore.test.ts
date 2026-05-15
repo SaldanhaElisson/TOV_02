@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// ============================================================
-// WebGazer global stub
-// webgazer is loaded as an IIFE <script> tag — no npm module to mock.
-// We stub the global with a vi.fn() mock before importing the store.
-// ============================================================
-
 type GazeCallback = (data: { x: number; y: number } | null) => void;
 
 interface WebGazerMock {
@@ -44,15 +38,7 @@ const wgMock: WebGazerMock = {
 
 vi.stubGlobal('webgazer', wgMock);
 
-// ============================================================
-// Import store after stub is in place
-// ============================================================
-
 import { gazeStore } from './GazeStore.svelte';
-
-// ============================================================
-// Helpers
-// ============================================================
 
 function setupMockChaining(): void {
 	wgMock.begin.mockResolvedValue(undefined);
@@ -70,10 +56,6 @@ function getCapturedGazeListener(): GazeCallback {
 	return lastCall[0];
 }
 
-// ============================================================
-// Suite
-// ============================================================
-
 describe('GazeStore', () => {
 	beforeEach(() => {
 		gazeStore.stop();
@@ -83,7 +65,7 @@ describe('GazeStore', () => {
 
 	afterEach(() => {
 		vi.unstubAllGlobals();
-		vi.stubGlobal('webgazer', wgMock); // restore stub for next test
+		vi.stubGlobal('webgazer', wgMock);
 	});
 
 	describe('Estado inicial', () => {

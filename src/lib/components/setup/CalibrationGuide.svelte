@@ -1,10 +1,5 @@
-<script lang="ts">
-  // Static informational panel — no logic needed.
-</script>
-
 <section class="flex max-h-screen flex-col gap-5 overflow-y-auto rounded-xl border border-border bg-raised px-8 py-7">
 
-  <!-- Header -->
   <div>
     <p class="text-xs font-semibold uppercase tracking-widest text-accent">Guia</p>
     <h2 class="mt-0.5 text-xl font-bold tracking-tight text-text">O que é Eye Tracking?</h2>
@@ -15,7 +10,6 @@
     </p>
   </div>
 
-  <!-- How it works -->
   <div>
     <h3 class="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">Como funciona</h3>
     <div class="grid gap-3 md:grid-cols-3">
@@ -49,7 +43,6 @@
     </div>
   </div>
 
-  <!-- Calibration -->
   <div>
     <h3 class="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">Calibração por Cliques</h3>
     <div class="rounded-lg border border-accent/40 bg-accent/5 p-4 text-xs">
@@ -68,7 +61,6 @@
     </div>
   </div>
 
-  <!-- Tips -->
   <div class="border-t border-border pt-3">
     <h3 class="mb-1.5 text-xs font-semibold uppercase tracking-widest text-muted">Dicas para melhor resultado</h3>
     <ul class="grid grid-cols-2 gap-x-8 gap-y-0.5 text-xs text-muted/70 md:grid-cols-3">

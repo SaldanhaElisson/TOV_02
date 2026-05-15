@@ -2,16 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { executionStore } from './executionStore.svelte';
 import { experimentStore } from './experimentStore.svelte';
 
-// ============================================================
-// URL stubs (jsdom does not implement Blob URLs)
-// ============================================================
-
 const createObjectURL = vi.fn((f: File) => `blob:mock/${f.name}`);
 vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL: vi.fn() });
-
-// ============================================================
-// Factories
-// ============================================================
 
 function makeFile(name: string): File {
 	return new File(['data'], name, { type: 'image/jpeg' });
@@ -21,23 +13,14 @@ function loadStimuli(names: string[]): void {
 	experimentStore.addStimuli(names.map(makeFile));
 }
 
-// ============================================================
-// Suite
-// ============================================================
-
 describe('executionStore', () => {
 	beforeEach(() => {
 		executionStore.stop();
 		experimentStore.clear();
 		vi.clearAllMocks();
 		createObjectURL.mockImplementation((f: File) => `blob:mock/${f.name}`);
-		// Reset config to known defaults before each test
 		experimentStore.updateConfig({ mode: 'MANUAL', duration: 5000, recalibrationInterval: 0, isRandom: false });
 	});
-
-	// ----------------------------------------------------------
-	// 1. Estado Inicial
-	// ----------------------------------------------------------
 
 	describe('Estado inicial', () => {
 		it('currentIndex começa em -1 (não iniciado)', () => {
@@ -60,10 +43,6 @@ describe('executionStore', () => {
 			expect(executionStore.isRunning).toBe(false);
 		});
 	});
-
-	// ----------------------------------------------------------
-	// 2. start()
-	// ----------------------------------------------------------
 
 	describe('start()', () => {
 		it('define currentIndex como 0', () => {
@@ -103,10 +82,6 @@ describe('executionStore', () => {
 		});
 	});
 
-	// ----------------------------------------------------------
-	// 3. next() — Modo MANUAL
-	// ----------------------------------------------------------
-
 	describe('next() — modo MANUAL', () => {
 		beforeEach(() => loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']));
 
@@ -124,9 +99,9 @@ describe('executionStore', () => {
 
 		it('define isComplete na última transição', () => {
 			executionStore.start();
-			executionStore.next(); // 0 → 1
-			executionStore.next(); // 1 → 2 (último)
-			executionStore.next(); // 2 → complete
+			executionStore.next();
+			executionStore.next();
+			executionStore.next();
 			expect(executionStore.isComplete).toBe(true);
 		});
 
@@ -134,9 +109,9 @@ describe('executionStore', () => {
 			executionStore.start();
 			executionStore.next();
 			executionStore.next();
-			executionStore.next(); // dispara isComplete
+			executionStore.next();
 			const indexOnComplete = executionStore.currentIndex;
-			executionStore.next(); // deve ser no-op
+			executionStore.next();
 			expect(executionStore.currentIndex).toBe(indexOnComplete);
 		});
 
@@ -145,10 +120,6 @@ describe('executionStore', () => {
 			expect(executionStore.currentIndex).toBe(-1);
 		});
 	});
-
-	// ----------------------------------------------------------
-	// 4. Modo FIXED — timer automático
-	// ----------------------------------------------------------
 
 	describe('Modo FIXED — avanço automático por timer', () => {
 		beforeEach(() => {
@@ -192,10 +163,6 @@ describe('executionStore', () => {
 		});
 	});
 
-	// ----------------------------------------------------------
-	// 5. pause() / resume()
-	// ----------------------------------------------------------
-
 	describe('pause() e resume()', () => {
 		beforeEach(() => {
 			vi.useFakeTimers();
@@ -229,22 +196,18 @@ describe('executionStore', () => {
 		it('resume() é no-op quando não está pausado', () => {
 			loadStimuli(['extra.jpg']);
 			executionStore.start();
-			executionStore.resume(); // não estava pausado
+			executionStore.resume();
 			expect(executionStore.isPaused).toBe(false);
 		});
 	});
-
-	// ----------------------------------------------------------
-	// 6. Recalibração periódica (recalibrationInterval)
-	// ----------------------------------------------------------
 
 	describe('Recalibração periódica (recalibrationInterval)', () => {
 		it('define needsRecalibration ao atingir o intervalo', () => {
 			experimentStore.updateConfig({ recalibrationInterval: 2 });
 			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg', 'd.jpg']);
 			executionStore.start();
-			executionStore.next(); // completedCount=1, 1%2≠0
-			executionStore.next(); // completedCount=2, 2%2=0 → recalibra
+			executionStore.next();
+			executionStore.next();
 			expect(executionStore.needsRecalibration).toBe(true);
 		});
 
@@ -261,9 +224,9 @@ describe('executionStore', () => {
 			experimentStore.updateConfig({ recalibrationInterval: 1 });
 			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
 			executionStore.start();
-			executionStore.next(); // completedCount=1, 1%1=0 → recalibra
+			executionStore.next();
 			const frozenIndex = executionStore.currentIndex;
-			executionStore.next(); // não deve avançar
+			executionStore.next();
 			expect(executionStore.currentIndex).toBe(frozenIndex);
 		});
 
@@ -281,18 +244,14 @@ describe('executionStore', () => {
 			experimentStore.updateConfig({ mode: 'FIXED', duration: 500, recalibrationInterval: 1 });
 			loadStimuli(['a.jpg', 'b.jpg', 'c.jpg']);
 			executionStore.start();
-			vi.advanceTimersByTime(500); // next(): completedCount=1 → recalibra
+			vi.advanceTimersByTime(500);
 			expect(executionStore.needsRecalibration).toBe(true);
 			executionStore.acknowledgeRecalibration();
-			vi.advanceTimersByTime(500); // retoma
+			vi.advanceTimersByTime(500);
 			expect(executionStore.currentIndex).toBe(2);
 			vi.useRealTimers();
 		});
 	});
-
-	// ----------------------------------------------------------
-	// 7. isRandom
-	// ----------------------------------------------------------
 
 	describe('isRandom — embaralhamento da ordem', () => {
 		it('visita todos os estímulos mesmo embaralhado', () => {

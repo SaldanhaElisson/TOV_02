@@ -2,7 +2,6 @@ import { render, cleanup, fireEvent } from '@testing-library/svelte';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import StimulusDisplay from './StimulusDisplay.svelte';
 
-
 const mocks = vi.hoisted(() => ({
 	stimulus: { id: '1', url: 'blob:mock/test.jpg', name: 'test.jpg' } as
 		| { id: string; url: string; name: string }
@@ -11,8 +10,6 @@ const mocks = vi.hoisted(() => ({
 	next: vi.fn(),
 	setImageBounds: vi.fn(),
 }));
-
-
 
 vi.mock('$lib/stores/executionStore.svelte', () => ({
 	executionStore: {
@@ -31,8 +28,6 @@ vi.mock('$lib/stores/resultsStore.svelte', () => ({
 	resultsStore: { setImageBounds: mocks.setImageBounds },
 }));
 
-
-
 const MOCK_RECT: DOMRect = {
 	width: 800, height: 600, left: 100, top: 50,
 	right: 900, bottom: 650, x: 100, y: 50,
@@ -47,7 +42,6 @@ const ZERO_RECT: DOMRect = {
 
 function mockImageElement(el: HTMLImageElement, rect: DOMRect = MOCK_RECT): void {
 	vi.spyOn(el, 'getBoundingClientRect').mockReturnValue(rect);
-	// naturalWidth/naturalHeight equal element size → scale = 1, no letterbox offset
 	Object.defineProperty(el, 'naturalWidth',  { value: rect.width,  configurable: true });
 	Object.defineProperty(el, 'naturalHeight', { value: rect.height, configurable: true });
 }
@@ -56,16 +50,11 @@ function mockBoundingRect(el: Element, rect: DOMRect = MOCK_RECT): void {
 	mockImageElement(el as HTMLImageElement, rect);
 }
 
-// ============================================================
-// rAF control — deterministic scheduling for layout-deferred assertions
-// ============================================================
-
 let rafQueue: FrameRequestCallback[] = [];
 
 function flushRaf(): void {
 	rafQueue.splice(0).forEach(cb => cb(performance.now()));
 }
-
 
 describe('StimulusDisplay', () => {
 	beforeEach(() => {
@@ -84,10 +73,6 @@ describe('StimulusDisplay', () => {
 		cleanup();
 	});
 
-	// ----------------------------------------------------------
-	// Renderização
-	// ----------------------------------------------------------
-
 	describe('Renderização', () => {
 		it('renderiza a imagem com src e alt do estímulo atual', () => {
 			const { getByRole } = render(StimulusDisplay);
@@ -103,33 +88,25 @@ describe('StimulusDisplay', () => {
 		});
 	});
 
-	// ----------------------------------------------------------
-	// Captura de bounds — timing correto (rAF, não onload direto)
-	// ----------------------------------------------------------
-
 	describe('Captura de bounds (onload → rAF → getBoundingClientRect)', () => {
 		it('NÃO lê getBoundingClientRect no momento imediato do onload', async () => {
 			const { getByRole } = render(StimulusDisplay);
 			const img = getByRole('img');
-			// Simula: no onload, o layout ainda não foi calculado → rect retorna (0, 0)
 			mockBoundingRect(img, ZERO_RECT);
 
 			await fireEvent.load(img);
 
-			// Com código sem rAF: setImageBounds já teria sido chamado com (0, 0) ← FALHA
-			// Com rAF: ainda não foi chamado (deferred) ← PASSA
 			expect(mocks.setImageBounds).not.toHaveBeenCalled();
 		});
 
 		it('lê getBoundingClientRect após o rAF, quando o layout já está completo', async () => {
 			const { getByRole } = render(StimulusDisplay);
 			const img = getByRole('img');
-			mockBoundingRect(img, ZERO_RECT); // onload: layout não pronto
+			mockBoundingRect(img, ZERO_RECT);
 
 			await fireEvent.load(img);
 			expect(mocks.setImageBounds).not.toHaveBeenCalled();
 
-			// Layout completa entre onload e rAF
 			mockBoundingRect(img, MOCK_RECT);
 			flushRaf();
 
@@ -166,17 +143,13 @@ describe('StimulusDisplay', () => {
 			const img = getByRole('img');
 			mockBoundingRect(img);
 
-			mocks.stimulus = null; // muda antes do evento
+			mocks.stimulus = null;
 			await fireEvent.load(img);
 			flushRaf();
 
 			expect(mocks.setImageBounds).not.toHaveBeenCalled();
 		});
 	});
-
-	// ----------------------------------------------------------
-	// Teclado — Spacebar (modo MANUAL)
-	// ----------------------------------------------------------
 
 	describe('Tecla Espaço — modo MANUAL', () => {
 		it('chama executionStore.next() ao pressionar Espaço', async () => {

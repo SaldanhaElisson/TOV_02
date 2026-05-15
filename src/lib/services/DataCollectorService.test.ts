@@ -1,20 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Point } from '$lib/stores/GazeStore.svelte';
 
-// ============================================================
-// Hoisted mock state
-// ============================================================
-
 const mocks = vi.hoisted(() => ({
 	latestGaze: { x: 100, y: 200 } as Point,
 	isRunning:  true,
 	startTime:  0 as number | null,
 }));
-
-// ============================================================
-// Module mocks — GazeStore and executionStore only.
-// resultsStore is used without mocking so we can inspect real state.
-// ============================================================
 
 vi.mock('$lib/stores/GazeStore.svelte', () => ({
 	gazeStore: {
@@ -29,16 +20,8 @@ vi.mock('$lib/stores/executionStore.svelte', () => ({
 	},
 }));
 
-// ============================================================
-// Imports (after mocks are declared)
-// ============================================================
-
 import { resultsStore } from '$lib/stores/resultsStore.svelte';
 import { dataCollector } from './DataCollector.svelte';
-
-// ============================================================
-// Suite
-// ============================================================
 
 describe('dataCollector', () => {
 	let recordGazeEntrySpy: ReturnType<typeof vi.spyOn>;
@@ -58,10 +41,6 @@ describe('dataCollector', () => {
 		vi.restoreAllMocks();
 	});
 
-	// ----------------------------------------------------------
-	// start() / stop() lifecycle
-	// ----------------------------------------------------------
-
 	describe('start() / stop()', () => {
 		it('start() começa a coletar pontos de gaze a cada ~33ms', () => {
 			dataCollector.start();
@@ -71,7 +50,7 @@ describe('dataCollector', () => {
 
 		it('acumula chamadas a cada tick do intervalo', () => {
 			dataCollector.start();
-			vi.advanceTimersByTime(99); // 3 ticks
+			vi.advanceTimersByTime(99);
 			expect(recordGazeEntrySpy).toHaveBeenCalledTimes(3);
 		});
 
@@ -84,7 +63,7 @@ describe('dataCollector', () => {
 
 		it('start() é no-op se já está em execução (idempotente)', () => {
 			dataCollector.start();
-			dataCollector.start(); // segunda chamada deve ser ignorada
+			dataCollector.start();
 			vi.advanceTimersByTime(33);
 			expect(recordGazeEntrySpy).toHaveBeenCalledOnce();
 		});
@@ -93,10 +72,6 @@ describe('dataCollector', () => {
 			expect(() => dataCollector.stop()).not.toThrow();
 		});
 	});
-
-	// ----------------------------------------------------------
-	// Coleta condicional
-	// ----------------------------------------------------------
 
 	describe('Coleta condicional', () => {
 		it('não coleta quando o experimento está pausado (isRunning = false)', () => {
@@ -125,10 +100,6 @@ describe('dataCollector', () => {
 		});
 	});
 
-	// ----------------------------------------------------------
-	// Dados gerados
-	// ----------------------------------------------------------
-
 	describe('Dados gerados', () => {
 		it('passa o ponto de gaze correto para recordGazeEntry', () => {
 			mocks.latestGaze = { x: 512, y: 384 };
@@ -139,7 +110,7 @@ describe('dataCollector', () => {
 
 		it('calcula elapsedTime como Date.now() − startTime', () => {
 			vi.setSystemTime(5000);
-			mocks.startTime = 5000; // elapsedTime = (5000+33) − 5000 = 33 após 1 tick
+			mocks.startTime = 5000;
 			dataCollector.start();
 			vi.advanceTimersByTime(33);
 			expect(recordGazeEntrySpy).toHaveBeenCalledWith(expect.any(Object), 33);
@@ -150,7 +121,6 @@ describe('dataCollector', () => {
 			mocks.startTime  = 5000;
 			mocks.latestGaze = { x: 841, y: 569 };
 
-			// Cria a linha com as 6 colunas de imagem (responsabilidade do StimulusDisplay)
 			resultsStore.setImageBounds({
 				name:    'stimulus_01.jpg',
 				width:   1280,
@@ -164,7 +134,6 @@ describe('dataCollector', () => {
 
 			const row = resultsStore.rows[0];
 
-			// Colunas 1–6 (imagem)
 			expect(row.timestamp).toBeTypeOf('number');
 			expect(row.imageName).toBe('stimulus_01.jpg');
 			expect(row.imageWidth).toBe(1280);
@@ -172,7 +141,6 @@ describe('dataCollector', () => {
 			expect(row.imageScreenX).toBe(320);
 			expect(row.imageScreenY).toBe(180);
 
-			// Coluna 7 (gaze)
 			expect(row.gazeData).toHaveLength(1);
 			expect(row.gazeData[0]).toMatchObject({
 				x: 841,

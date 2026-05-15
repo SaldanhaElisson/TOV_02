@@ -87,13 +87,11 @@ describe('CsvService — exportToCsv', () => {
 		it('envolve o JSON em aspas duplas externas', () => {
 			const csv = exportToCsv([SINGLE_ROW]);
 			const dataLine = csv.split('\n')[1];
-			// O campo GazeData_JSON fica após a 6ª vírgula e deve ser "[ ... ]"
 			expect(dataLine).toMatch(/,"(\[.*\])"$/);
 		});
 
 		it('duplica as aspas internas do JSON (""x"": em vez de "x":)', () => {
 			const csv = exportToCsv([SINGLE_ROW]);
-			// O campo escapado deve conter ""x"" e não "x"
 			expect(csv).toContain('""x""');
 			expect(csv).toContain('""y""');
 			expect(csv).toContain('""timestamp""');
@@ -115,7 +113,6 @@ describe('CsvService — exportToCsv', () => {
 			const csv = exportToCsv([row]);
 			const dataLine = csv.split('\n')[1];
 
-			// Linha de referência do DATA_DICTIONARY.md §2.3
 			const expected =
 				'1774639661938,img.jpg,800,600,0,0,"[{""x"":841.27,""y"":569.41,""timestamp"":1774639661938,""elapsedTime"":31947.8}]"';
 			expect(dataLine).toBe(expected);
@@ -130,7 +127,6 @@ describe('CsvService — exportToCsv', () => {
 				],
 			};
 			const csv = exportToCsv([row]);
-			// O campo deve ser um array JSON com 2 objetos
 			expect(csv).toContain('""x"":1');
 			expect(csv).toContain('""x"":3');
 		});

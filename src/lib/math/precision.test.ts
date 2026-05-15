@@ -46,7 +46,6 @@ describe('calculateMeanError', () => {
 	});
 
 	it('returns the mean of multiple distances', () => {
-		// Distance from (100,100) to (104,103) = 5; to (96,97) = 5
 		const samples = [{ x: 104, y: 103 }, { x: 96, y: 97 }];
 		expect(calculateMeanError(samples, target)).toBe(5);
 	});
@@ -78,15 +77,9 @@ describe('toScreenPoint', () => {
 	});
 });
 
-// ============================================================
-// calculatePrecision — WebGazer-compatible 0-100% score
-// Window: 1920×1080 → center (960, 540), maxDistance = 540
-// ============================================================
-
 describe('calculatePrecision', () => {
 	const W = 1920;
 	const H = 1080;
-	// center = (960, 540), maxDistance = 540
 
 	it('retorna 0 para arrays vazios (guard clause)', () => {
 		expect(calculatePrecision([], [], W, H)).toBe(0);
@@ -99,38 +92,30 @@ describe('calculatePrecision', () => {
 	});
 
 	it('retorna 0 quando a amostra está exatamente na borda do raio de aceitação', () => {
-		// distance = 540 = maxDistance → precision = 0
 		const xs = [960];
-		const ys = [540 + 540]; // y = 1080, distance = 540
+		const ys = [540 + 540];
 		expect(calculatePrecision(xs, ys, W, H)).toBe(0);
 	});
 
 	it('retorna 0 quando a amostra está além do raio de aceitação', () => {
 		const xs = [960];
-		const ys = [540 + 600]; // distance > 540
+		const ys = [540 + 600];
 		expect(calculatePrecision(xs, ys, W, H)).toBe(0);
 	});
 
 	it('retorna ~50 quando a amostra está a metade do raio (distância = 270)', () => {
-		// Sample at (960, 540+270) → distance = 270 → precision = 100 - (270/540)*100 = 50
 		const xs = [960];
 		const ys = [810];
 		expect(calculatePrecision(xs, ys, W, H)).toBe(50);
 	});
 
 	it('retorna a média arredondada de múltiplas amostras', () => {
-		// Sample 1: distance 0   → precision 100
-		// Sample 2: distance 270 → precision 50
-		// Average = 75
 		const xs = [960, 960];
 		const ys = [540, 810];
 		expect(calculatePrecision(xs, ys, W, H)).toBe(75);
 	});
 
 	it('arredonda o resultado para inteiro', () => {
-		// 3 samples: 100, 50, 0 → avg = 50.0 (exact, no rounding needed)
-		// Use 5 samples to get a float average
-		// precisions: 100, 100, 100, 100, 50 → avg = 90
 		const xs = [960, 960, 960, 960, 960];
 		const ys = [540, 540, 540, 540, 810];
 		expect(calculatePrecision(xs, ys, W, H)).toBe(90);
@@ -145,8 +130,6 @@ describe('calculatePrecision', () => {
 	});
 
 	it('funciona com viewport não-quadrado (landscape)', () => {
-		// 800×600: center (400, 300), maxDistance = 300
-		// Sample at center → 100
 		expect(calculatePrecision([400], [300], 800, 600)).toBe(100);
 	});
 });

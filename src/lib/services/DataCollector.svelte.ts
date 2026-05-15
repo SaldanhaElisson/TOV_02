@@ -2,32 +2,14 @@ import { gazeStore } from '$lib/stores/GazeStore.svelte';
 import { executionStore } from '$lib/stores/executionStore.svelte';
 import { resultsStore } from '$lib/stores/resultsStore.svelte';
 
-// ============================================================
-// Constants
-// ============================================================
-
-/** Sampling rate: ~30 fps. */
 const INTERVAL_MS = 33;
-
-// ============================================================
-// State
-// ============================================================
 
 let timerId: ReturnType<typeof setInterval> | null = null;
 
-// ============================================================
-// Private
-// ============================================================
-
-/** Called on every interval tick. No-op if the experiment is not running. */
 function collectSample(): void {
 	if (!executionStore.isRunning) return;
 	resultsStore.recordGazeEntry(gazeStore.latestGaze);
 }
-
-// ============================================================
-// Public API
-// ============================================================
 
 function start(): void {
 	if (timerId !== null) return;

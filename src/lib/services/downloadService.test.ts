@@ -1,24 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// ============================================================
-// URL stubs — jsdom does not implement Blob URLs
-// ============================================================
-
 const MOCK_URL = 'blob:mock/tov_results.csv';
 
 const createObjectURL = vi.fn(() => MOCK_URL);
 const revokeObjectURL = vi.fn();
 vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL });
 
-// ============================================================
-// Import after stubs
-// ============================================================
-
 import { triggerCsvDownload } from './DownloadService';
-
-// ============================================================
-// Suite
-// ============================================================
 
 describe('triggerCsvDownload', () => {
 	let anchor: HTMLAnchorElement;
@@ -27,9 +15,8 @@ describe('triggerCsvDownload', () => {
 		vi.clearAllMocks();
 		createObjectURL.mockReturnValue(MOCK_URL);
 
-		// Real HTMLAnchorElement — safe to pass to appendChild / removeChild
 		anchor = document.createElement('a');
-		vi.spyOn(anchor, 'click').mockImplementation(() => { /* no-op */ });
+		vi.spyOn(anchor, 'click').mockImplementation(() => {});
 
 		vi.spyOn(document, 'createElement').mockReturnValue(anchor as HTMLElement);
 		vi.spyOn(document.body, 'appendChild').mockReturnValue(anchor as Node);
@@ -39,10 +26,6 @@ describe('triggerCsvDownload', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
-
-	// ----------------------------------------------------------
-	// Criação do Blob
-	// ----------------------------------------------------------
 
 	describe('Blob', () => {
 		it('cria um Blob com o type MIME text/csv;charset=utf-8;', () => {
@@ -67,10 +50,6 @@ describe('triggerCsvDownload', () => {
 		});
 	});
 
-	// ----------------------------------------------------------
-	// Configuração do anchor
-	// ----------------------------------------------------------
-
 	describe('Configuração do anchor', () => {
 		it('define anchor.href com a URL do objeto gerado', () => {
 			triggerCsvDownload('data', 'file.csv');
@@ -87,10 +66,6 @@ describe('triggerCsvDownload', () => {
 			expect(vi.mocked(document.createElement)).toHaveBeenCalledWith('a');
 		});
 	});
-
-	// ----------------------------------------------------------
-	// Ciclo de vida do anchor no DOM
-	// ----------------------------------------------------------
 
 	describe('Ciclo de vida no DOM', () => {
 		it('adiciona o anchor ao document.body antes do click', () => {
@@ -126,10 +101,6 @@ describe('triggerCsvDownload', () => {
 			expect(order).toEqual(['append', 'click', 'remove']);
 		});
 	});
-
-	// ----------------------------------------------------------
-	// Cleanup de memória
-	// ----------------------------------------------------------
 
 	describe('Cleanup (sem memory leak)', () => {
 		it('chama URL.revokeObjectURL com a URL criada', () => {

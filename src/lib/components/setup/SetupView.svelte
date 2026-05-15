@@ -13,7 +13,6 @@
 
 <div class="bg-surface text-text">
 
-  <!-- ── Tela 1: Configuração ─────────────────────────────────────────────── -->
   <div>
     <div class="mx-auto max-w-4xl space-y-6 px-6 py-8">
 
@@ -69,7 +68,6 @@
     </div>
   </div>
 
-  <!-- ── Tela 2: Guia de calibração ──────────────────────────────────────── -->
   <div id="guide" class="mx-auto max-w-4xl px-6 py-8">
     <CalibrationGuide />
   </div>

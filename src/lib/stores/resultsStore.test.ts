@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { ExportRow } from '$lib/services/CsvService';
 
-// ============================================================
-// Hoisted — CsvService mock
-// ============================================================
-
 const exportToCsvMock = vi.hoisted(() => vi.fn((_rows: ExportRow[]) => 'header\nmock_row'));
 const triggerCsvDownloadMock = vi.hoisted(() => vi.fn());
 
@@ -16,15 +12,7 @@ vi.mock('$lib/services/DownloadService', () => ({
 	triggerCsvDownload: triggerCsvDownloadMock,
 }));
 
-// ============================================================
-// Import after mocks
-// ============================================================
-
 import { resultsStore } from './resultsStore.svelte';
-
-// ============================================================
-// Helpers
-// ============================================================
 
 function makeRow(overrides: Partial<ExportRow> = {}): ExportRow {
 	return {
@@ -39,10 +27,6 @@ function makeRow(overrides: Partial<ExportRow> = {}): ExportRow {
 	};
 }
 
-// ============================================================
-// Suite
-// ============================================================
-
 describe('resultsStore', () => {
 	beforeEach(() => {
 		resultsStore.flush();
@@ -53,10 +37,6 @@ describe('resultsStore', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
-
-	// ----------------------------------------------------------
-	// setImageBounds()
-	// ----------------------------------------------------------
 
 	describe('setImageBounds()', () => {
 		it('cria um novo row quando a geometria é válida (width e height > 0)', () => {
@@ -82,10 +62,6 @@ describe('resultsStore', () => {
 			});
 		});
 	});
-
-	// ----------------------------------------------------------
-	// addRecord()
-	// ----------------------------------------------------------
 
 	describe('addRecord()', () => {
 		it('insere um ExportRow no array de rows', () => {
@@ -118,10 +94,6 @@ describe('resultsStore', () => {
 		});
 	});
 
-	// ----------------------------------------------------------
-	// generateFinalCsv()
-	// ----------------------------------------------------------
-
 	describe('generateFinalCsv()', () => {
 		it('chama exportToCsv com os rows acumulados', () => {
 			const row = makeRow();
@@ -149,10 +121,6 @@ describe('resultsStore', () => {
 			expect(resultsStore.rows).toHaveLength(1);
 		});
 	});
-
-	// ----------------------------------------------------------
-	// exportAndDownload()
-	// ----------------------------------------------------------
 
 	describe('exportAndDownload()', () => {
 		it('é no-op (guard clause) quando não há dados', () => {
