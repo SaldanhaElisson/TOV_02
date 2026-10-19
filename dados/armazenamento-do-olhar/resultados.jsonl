@@ -1,0 +1,12 @@
+{"run":1,"format":"postgres-rows","points":6000000,"writeTotalS":32.4,"pointsPerS":185311,"uploadP50Ms":239,"uploadP95Ms":926,"diskMB":818,"bytesPerPoint":143,"csvP50Ms":21,"csvP95Ms":29,"csvSizeMB":0.75}
+{"run":1,"format":"postgres-array","points":6000000,"writeTotalS":7,"pointsPerS":861819,"uploadP50Ms":49,"uploadP95Ms":84,"diskMB":159,"bytesPerPoint":27.7,"csvP50Ms":13,"csvP95Ms":16,"csvSizeMB":0.75}
+{"run":1,"format":"mongo-docs","points":6000000,"writeTotalS":13.5,"pointsPerS":443822,"uploadP50Ms":135,"uploadP95Ms":199,"diskMB":346,"bytesPerPoint":60.5,"csvP50Ms":31,"csvP95Ms":38,"csvSizeMB":0.75}
+{"run":1,"format":"mongo-embedded","points":6000000,"writeTotalS":6.4,"pointsPerS":931069,"uploadP50Ms":56,"uploadP95Ms":111,"diskMB":177,"bytesPerPoint":31,"csvP50Ms":14,"csvP95Ms":22,"csvSizeMB":0.75}
+{"run":2,"format":"postgres-rows","points":6000000,"writeTotalS":34.7,"pointsPerS":172846,"uploadP50Ms":234,"uploadP95Ms":986,"diskMB":820,"bytesPerPoint":143.2,"csvP50Ms":20,"csvP95Ms":23,"csvSizeMB":0.75}
+{"run":2,"format":"postgres-array","points":6000000,"writeTotalS":4.1,"pointsPerS":1469817,"uploadP50Ms":40,"uploadP95Ms":55,"diskMB":159,"bytesPerPoint":27.7,"csvP50Ms":12,"csvP95Ms":15,"csvSizeMB":0.75}
+{"run":2,"format":"mongo-docs","points":6000000,"writeTotalS":16.5,"pointsPerS":363533,"uploadP50Ms":120,"uploadP95Ms":485,"diskMB":345,"bytesPerPoint":60.4,"csvP50Ms":28,"csvP95Ms":35,"csvSizeMB":0.75}
+{"run":2,"format":"mongo-embedded","points":6000000,"writeTotalS":6.4,"pointsPerS":941595,"uploadP50Ms":51,"uploadP95Ms":108,"diskMB":195,"bytesPerPoint":34.1,"csvP50Ms":13,"csvP95Ms":17,"csvSizeMB":0.75}
+{"run":3,"format":"postgres-rows","points":6000000,"writeTotalS":33,"pointsPerS":181746,"uploadP50Ms":216,"uploadP95Ms":1030,"diskMB":819,"bytesPerPoint":143.2,"csvP50Ms":18,"csvP95Ms":20,"csvSizeMB":0.75}
+{"run":3,"format":"postgres-array","points":6000000,"writeTotalS":5.1,"pointsPerS":1184945,"uploadP50Ms":38,"uploadP95Ms":120,"diskMB":159,"bytesPerPoint":27.7,"csvP50Ms":12,"csvP95Ms":13,"csvSizeMB":0.75}
+{"run":3,"format":"mongo-docs","points":6000000,"writeTotalS":17.4,"pointsPerS":344091,"uploadP50Ms":117,"uploadP95Ms":598,"diskMB":344,"bytesPerPoint":60.2,"csvP50Ms":26,"csvP95Ms":32,"csvSizeMB":0.75}
+{"run":3,"format":"mongo-embedded","points":6000000,"writeTotalS":6.9,"pointsPerS":867456,"uploadP50Ms":49,"uploadP95Ms":173,"diskMB":183,"bytesPerPoint":31.9,"csvP50Ms":12,"csvP95Ms":14,"csvSizeMB":0.75}
