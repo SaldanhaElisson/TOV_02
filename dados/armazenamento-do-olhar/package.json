@@ -1,0 +1,14 @@
+{
+  "name": "tov-gaze-storage-benchmark",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Compares PostgreSQL 18 and MongoDB 8 for storing TOV gaze records",
+  "scripts": {
+    "bench": "./run.sh"
+  },
+  "dependencies": {
+    "mongodb": "^6.21.0",
+    "pg": "^8.23.1"
+  }
+}
