@@ -23,8 +23,9 @@ sem backend, e pesquisador e participante usam a mesma máquina. A feature
 `specs/planejadas/001-experimento-remoto` acrescenta backend, conta de
 pesquisador, link de participação sem login e download dos dados. Toda tarefa
 que envolva backend, banco ou autenticação é trabalho novo que começa pela spec
-e pelo plano, nunca como extensão do código atual. Backend, banco, hospedagem e
-testes no navegador: **a definir no plan.md**.
+e pelo plano, nunca como extensão do código atual. Backend: **NestJS + Prisma +
+PostgreSQL 18** (`docs/decisoes/0001-backend-nestjs-prisma-postgres.md`).
+Hospedagem e testes no navegador: **a definir no plan.md**.
 
 ## Mapa do repositório
 
@@ -43,12 +44,16 @@ testes no navegador: **a definir no plan.md**.
 | `src/**/*.test.ts` | Testes ao lado do código | Vitest, jsdom, @testing-library/svelte |
 | `public/` | `webgazer.js` (carregado pelo `index.html` antes do app) e `mediapipe/face_mesh/` (modelo de rosto usado pelo WebGazer) | Arquivos estáticos |
 | `docs/` | Documentação do projeto; índice em `docs/README.md` | Markdown |
+| `dados/` | Modelo de dados do backend (`modelo-de-dados.md`) e estudos sobre armazenamento (ex.: benchmark Postgres × Mongo), com código para repetir as medições; índice em `dados/TLDR.md` | Markdown, Node, Docker |
 | `specs/` | Constituição (`constitution.md`) e specs SDD: `aceitas/` e `planejadas/` | Markdown |
 | `.claude/skills/` | Skills dos agentes (ver abaixo) | Markdown |
 
 ## Fontes únicas da verdade
 
 - Formato do CSV exportado: `docs/DATA_DICTIONARY.md`.
+- Modelo de dados do backend (visão conceitual e modelo físico):
+  `dados/modelo-de-dados.md`. Quando existir, o `schema.prisma` prevalece e o
+  documento é corrigido no mesmo commit.
 - Comportamento do sistema: `specs/aceitas/`. O protocolo atual de calibração,
   validação e execução está em `specs/aceitas/000-experimento-local/spec.md`.
 - Tipos de domínio são importados dos módulos que os definem (ex.: `ExportRow` e
@@ -65,22 +70,31 @@ testes no navegador: **a definir no plan.md**.
   que toque no assunto.
 - `specs/planejadas/`: rascunhos e features em andamento; ignore, a menos que a
   tarefa atual pertença a uma delas.
+- Cada spec é granular: um ator e um resultado verificável, resumidos num
+  critério `C-NNN` (skill writing-specs). Um épico vira várias specs, ligadas
+  por `Depende de:`.
 - Cada feature é uma pasta com `spec.md`, `plan.md` e `tasks.md`. A pasta
   inteira passa de `planejadas/` para `aceitas/` quando a feature estiver
   implementada e com os testes passando. Exceção: specs retroativas, que
   documentam código anterior ao SDD, têm só `spec.md` (ex.: `000-experimento-local`).
+- Toda spec tem diagramas Mermaid (fluxo e, quando houver, troca de dados e
+  entidades), conforme a skill writing-specs.
 - Todo `plan.md` começa pela "Verificação da constituição" (`specs/constitution.md`).
+- Todo `plan.md` de spec que cria ou altera dados tem a seção "Modelo de dados":
+  o que muda em `dados/modelo-de-dados.md` e a migração do Prisma.
 - Mudança de comportamento: atualize a spec antes do código.
 
 ## Fluxo de trabalho
 
-1. Só implemente o que estiver em uma tarefa do `tasks.md` da feature atual,
+1. Se a tarefa pedida mudar comportamento e ainda não tiver spec, comece pela
+   skill writing-specs; nada de plano ou código antes da spec confirmada.
+2. Só implemente o que estiver em uma tarefa do `tasks.md` da feature atual,
    uma tarefa por vez.
-2. Altere apenas o necessário para a tarefa. Exceção: criar e atualizar
+3. Altere apenas o necessário para a tarefa. Exceção: criar e atualizar
    `README.md` e `TLDR.md` conforme a skill helpful-documentation. Se outro
    código precisar de refatoração, não refatore: proponha uma nova tarefa e pare.
-3. Se a tarefa estiver ambígua ou contradisser a spec, pergunte antes de codar.
-4. Nunca altere um teste só para fazê-lo passar (skill clean-tests).
+4. Se a tarefa estiver ambígua ou contradisser a spec, pergunte antes de codar.
+5. Nunca altere um teste só para fazê-lo passar (skill clean-tests).
 
 ## Convenções
 
@@ -127,6 +141,7 @@ testes no navegador: **a definir no plan.md**.
 - **clean-code** — ao escrever, alterar ou revisar código de produção ou de teste.
 - **clean-tests** — ao escrever, alterar, revisar ou corrigir testes.
 - **grilling** — para sabatinar um plano ou decisão, ou clarificar uma spec.
+- **writing-specs** — antes de qualquer tarefa que mude comportamento sem spec; escreve uma spec granular por vez.
 - **helpful-documentation** — ao criar, alterar ou visitar código, pastas ou docs; mantém `README.md` e `TLDR.md` sincronizados.
 - **svelte-code-writer** — obrigatória ao criar, editar ou analisar `.svelte` ou `.svelte.ts`/`.svelte.js`.
 - **svelte-core-bestpractices** — ao escrever, editar ou analisar componentes e módulos Svelte.
